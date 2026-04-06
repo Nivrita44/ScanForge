@@ -12,6 +12,11 @@ app.use(express.json());
 // API routes
 app.use('/api', apiRoutes);
 
-app.listen(PORT, () => {
-  console.log(`ScanForge Backend running on http://localhost:${PORT}`);
-});
+// Export the app for Vercel serverless use
+module.exports = app;
+
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`ScanForge Backend running on http://localhost:${PORT}`);
+  });
+}

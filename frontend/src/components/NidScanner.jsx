@@ -48,8 +48,9 @@ export default function NidScanner() {
     if (frontImage) formData.append('front', frontImage);
     if (backImage) formData.append('back', backImage);
 
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
     try {
-      const response = await axios.post('http://localhost:5000/api/extract-nid', formData, {
+      const response = await axios.post(`${API_URL}/api/extract-nid`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setData(response.data.data);
