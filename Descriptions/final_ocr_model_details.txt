@@ -1,0 +1,48 @@
+SCANFORGE - BANGLA OCR & DOCUMENT INTELLIGENCE SYSTEM
+======================================================
+Development Documentation: Final OCR & Parsing Model
+
+1. CORE ARCHITECTURE
+-------------------
+The system uses a two-tier extraction strategy to handle both native (text-based) and scanned (image-based) PDFs:
+- Tier 1: Native Extraction (pdf-parse v1.1.1). Fast, handles text layers.
+- Tier 2: OCR Fallback (pdf-img-convert + Tesseract.js). Used when text layers are absent or sparse.
+
+2. BANGLA NORMALIZATION ENGINE (The "Parser Core")
+-------------------------------------------------
+Most Bangla PDFs store text in "Visual Order" (vowel signs before consonants). The ScanForge Normalizer performs a multi-pass transformation to restore Unicode Logical Order:
+
+A. Vowel Shifting:
+   - Reverts false 'ো' (O-kar) to 'ে' (E-kar) when extracted in visual order.
+   - Moves pre-base markers (ি, ে, ৈ) after their base consonants (e.g., েক -> কে).
+   - Recomposes split vowels (ে + কা -> কো).
+
+B. Conjunct Restoration (Jugmo Borno):
+   - Restores missing hasantas (connecting marks) in common clusters.
+   - Ganj (গঞ্জ): Maps extracted 'গঞ' -> 'গঞ্জ'.
+   - Panchayet (পঞ্চায়েত): Maps extracted 'পঞ' -> 'পঞ্চ'.
+   - Master (মাস্টার): Maps common misreadings like 'মাষার' and 'মাষাব' -> 'মাস্টার'.
+   - Akhtar (আক্তার): Maps 'আকার' -> 'আক্তার' for common name variants.
+   - Restores common double consonants: 'নন' -> 'ন্ন', 'লল' -> 'ল্ল', 'ম্ম' -> 'ম্ম'.
+
+C. Visual Clusters:
+   - Ya-phala (য-ফলা): Automatically restores 'ব্য', 'ল্য' and other post-consonant clusters.
+   - Ba-phala (ব-ফলা): Restores 'স্ব', 'দ্ব' in names and addresses.
+   - Reph Restoration: Specifically maps 'ণর' -> 'র্ণ' to fix common address errors like 'সর্ণকার'.
+
+3. OCR PIPELINE (SCANNED PDFS)
+------------------------------
+- Detection: System flags any PDF with <100 characters of text for OCR.
+- Conversion: Pages are converted to 1200px wide PNG buffers using pdf-img-convert.
+- Tesseract.js: Processes images using the 'ben' (Bengali) language pack.
+- Reusable Worker: Optimized to process multi-page documents without constant engine restarts.
+
+4. DATA EXPORT & COMPATIBILITY
+-----------------------------
+- Excel Formula Trick: Long numeric Voter IDs are exported as `="<ID>"` to prevent Excel from converting them to Scientific Notation (e.g., 1.23E+12).
+- UTF-8 BOM: Injects `\uFEFF` into the CSV file to ensure Excel renders Bangla characters correctly upon opening.
+
+5. REGEX FIELD MAPPING
+---------------------
+- Robust patterns for Serial Numbers, Names, Voter IDs, and Addresses.
+- Handles "hidden" Date of Birth fields embedded in occupation lines (e.g., 'জন তারিখ' vs 'জন্ম তারিখ').

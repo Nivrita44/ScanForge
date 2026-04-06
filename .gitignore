@@ -1,0 +1,18 @@
+node_modules
+.env
+*.log
+.DS_Store
+
+# Backend debug and temporary files
+backend/*.txt
+backend/full_check*
+backend/spell*
+backend/rawtext.txt
+backend/pdf_raw_text.txt
+
+# Demo data (large/sensitive)
+demo_pdf/
+
+# Frontend build artifacts
+frontend/dist
+frontend/build
