@@ -9,6 +9,9 @@ const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 router.post('/upload-pdf', upload.single('pdf'), pdfController.processPdf);
-router.post('/extract-nid', upload.single('nid'), nidController.processNid);
+router.post('/extract-nid', upload.fields([
+  { name: 'front', maxCount: 1 },
+  { name: 'back', maxCount: 1 }
+]), nidController.processNid);
 
 module.exports = router;

@@ -1,26 +1,37 @@
-const jimp = require('jimp');
+const { Jimp } = require('jimp');
 const { extractTextFromImageBuffer } = require('../services/ocrService');
 const { parseNidBlock } = require('../utils/parser');
 
 exports.processNid = async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ error: 'No NID image uploaded.' });
+    if (!req.files || (!req.files.front && !req.files.back)) {
+      return res.status(400).json({ error: 'No NID images uploaded.' });
     }
 
-    // Advanced: Image Preprocessing with Jimp
-    // Load image buffer, convert to grayscale, increase contrast
-    const image = await jimp.read(req.file.buffer);
-    image.greyscale().contrast(0.2);
-    
-    // Get processed buffer
-    const processedBuffer = await image.getBufferAsync(jimp.MIME_PNG);
+    let combinedRawText = '';
 
-    // Run OCR with Tesseract
-    const rawText = await extractTextFromImageBuffer(processedBuffer);
+    // Process Front Side
+    if (req.files.front && req.files.front[0]) {
+      const frontBuffer = req.files.front[0].buffer;
+      const frontImage = await Jimp.read(frontBuffer);
+      frontImage.greyscale().contrast(0.2);
+      const frontProcessed = await frontImage.getBuffer('image/png');
+      const frontText = await extractTextFromImageBuffer(frontProcessed);
+      combinedRawText += `\n--- FRONT SIDE ---\n${frontText}`;
+    }
 
-    // Parse the extracted text
-    const extractedData = parseNidBlock(rawText);
+    // Process Back Side
+    if (req.files.back && req.files.back[0]) {
+      const backBuffer = req.files.back[0].buffer;
+      const backImage = await Jimp.read(backBuffer);
+      backImage.greyscale().contrast(0.2);
+      const backProcessed = await backImage.getBuffer('image/png');
+      const backText = await extractTextFromImageBuffer(backProcessed);
+      combinedRawText += `\n--- BACK SIDE ---\n${backText}`;
+    }
+
+    // Parse combined text
+    const extractedData = parseNidBlock(combinedRawText);
 
     res.json({
       success: true,

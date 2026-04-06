@@ -52,7 +52,7 @@ export default function PdfUploader() {
   };
 
   return (
-    <div className="glass-card">
+    <div className="white-card">
       <div 
         className={`dropzone ${file ? 'active' : ''}`}
         onDragOver={(e) => e.preventDefault()}
@@ -75,8 +75,8 @@ export default function PdfUploader() {
         ) : (
           <>
             <UploadCloud size={48} className="dropzone-icon" />
-            <h3>Drag & drop voter PDF here</h3>
-            <p style={{color: 'var(--text-muted)'}}>Supports text and scanned Bangla PDFs</p>
+            <h3 style={{color: 'var(--primary-blue)'}}>ভোটার পিডিএফ ড্রপ করুন</h3>
+            <p style={{color: 'var(--text-light)'}}>স্ক্যান করা বা টেক্সট পিডিএফ থেকে ডাটা আলাদা করুন</p>
           </>
         )}
       </div>
@@ -94,22 +94,22 @@ export default function PdfUploader() {
           disabled={!file || loading}
         >
           {loading ? (
-            <><span className="loader"></span> Processing...</>
+            <><span className="loader"></span> প্রসেসিং...</>
           ) : (
-            'Extract Voter Data'
+            'তথ্য সংগ্রহ করুন (Extract Data)'
           )}
         </button>
       </div>
 
       {results.length > 0 && (
         <div style={{marginTop: '3rem', animation: 'fade-in 0.5s ease-out'}}>
-          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem'}}>
-            <h3 style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
-              <CheckCircle color="var(--accent-primary)" /> Extracted {results.length} records
+          <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem'}}>
+            <h3 style={{display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0}}>
+              <CheckCircle size={20} color="var(--accent-primary)" /> {results.length} টি তথ্য পাওয়া গেছে
             </h3>
             {downloadLink && (
-              <a href={downloadLink} download="voter_list.csv" className="btn btn-outline" style={{padding: '0.5rem 1rem'}}>
-                <Download size={18} /> Download CSV
+              <a href={downloadLink} download="voter_list.csv" className="btn btn-outline" style={{padding: '0.6rem 1.2rem', width: 'auto', flexGrow: 0}}>
+                <Download size={18} /> ডাউনলোড (CSV)
               </a>
             )}
           </div>

@@ -163,13 +163,23 @@ exports.parseVoterList = (rawText) => {
 exports.parseNidBlock = (rawText) => {
   const lines = rawText.split('\n').map(l => l.trim()).filter(Boolean);
 
-  const data = { name: '', name_bn: '', date_of_birth: '', nid_number: '' };
+  const data = { 
+    name: '', 
+    name_bn: '', 
+    father_name: '', 
+    mother_name: '', 
+    date_of_birth: '', 
+    nid_number: '',
+    address: '',
+    blood_group: '',
+    place_of_birth: ''
+  };
 
   // NID Number — 10, 13 or 17 consecutive digits
   const nidMatch = rawText.match(/\b(\d{10}|\d{13}|\d{17})\b/);
   if (nidMatch) data.nid_number = nidMatch[1];
   else {
-    const idLine = lines.find(l => /ID\s*NO/i.test(l));
+    const idLine = lines.find(l => /ID\s*NO|আইডি\s*নং/i.test(l));
     if (idLine) {
       const dig = idLine.match(/(\d+)/);
       if (dig) data.nid_number = dig[1];
@@ -177,12 +187,14 @@ exports.parseNidBlock = (rawText) => {
   }
 
   // DOB
-  const dobLine = lines.find(l => /Date\s+of\s+Birth/i.test(l) || /DOB/i.test(l));
+  const dobLine = lines.find(l => /Date\s+of\s+Birth/i.test(l) || /DOB/i.test(l) || /জন্ম\s+তারিখ/i.test(l));
   if (dobLine) {
-    const parts = dobLine.split(':');
-    data.date_of_birth = parts.length > 1
-      ? parts.slice(1).join(':').trim()
-      : (dobLine.match(/(\d{1,2}\s+[A-Za-z]{3}\s+\d{4})/) || [])[1] || '';
+    const parts = dobLine.split(/[:\s]+/);
+    const dateMatch = dobLine.match(/(\d{2}\s+[A-Za-z]{3}\s+\d{4})|(\d{2}[\s\/\-]\d{2}[\s\/\-]\d{4})/);
+    if (dateMatch) data.date_of_birth = dateMatch[0];
+    else {
+      data.date_of_birth = parts.slice(-3).join(' ').trim();
+    }
   }
 
   // English Name
@@ -190,8 +202,9 @@ exports.parseNidBlock = (rawText) => {
   if (nameLineIdx !== -1) {
     data.name = lines[nameLineIdx].split(':').slice(1).join(':').trim();
   } else {
+    // Look for all-caps line that doesn't contain noise keywords
     const allCaps = lines.find(l => /^[A-Z][A-Z\s\.]{2,}$/.test(l)
-      && !/(REPUBLIC|BANGLADESH|BLOOD|COMMISSION|ELECTORAL)/i.test(l));
+      && !/(REPUBLIC|BANGLADESH|BLOOD|COMMISSION|ELECTORAL|OFFICER|DIRECTOR|ADDRESS)/i.test(l));
     if (allCaps) data.name = allCaps;
   }
 
@@ -200,9 +213,57 @@ exports.parseNidBlock = (rawText) => {
   const bnNameLine = banglaLines.find(l => l.includes('নাম:'));
   if (bnNameLine) {
     data.name_bn = bnNameLine.split('নাম:')[1].trim();
+  }
+
+  // Father's Name
+  const fatherLine = banglaLines.find(l => /পিতা[:ঃ]?/.test(l)) || lines.find(l => /Father['\s]+Name/i.test(l));
+  if (fatherLine) {
+    data.father_name = fatherLine.split(/[:ঃ]/).slice(1).join(':').trim();
+  }
+
+  // Mother's Name
+  const motherLine = banglaLines.find(l => /মাতা[:ঃ]?/.test(l)) || lines.find(l => /Mother['\s]+Name/i.test(l));
+  if (motherLine) {
+    data.mother_name = motherLine.split(/[:ঃ]/).slice(1).join(':').trim();
+  }
+
+  // Address (usually on the back)
+  const addressIdx = lines.findIndex(l => /ঠিকানা[:ঃ]?/i.test(l) || /Address/i.test(l));
+  if (addressIdx !== -1) {
+    // Address often spans multiple lines
+    let addr = lines[addressIdx].split(/[:ঃ]/).slice(1).join(':').trim();
+    for (let i = addressIdx + 1; i < lines.length && i < addressIdx + 4; i++) {
+      if (/[\u0980-\u09FF]/.test(lines[i]) && !/রক্তের|জন্মস্থান|প্রদান/.test(lines[i])) {
+        addr += ' ' + lines[i];
+      } else break;
+    }
+    data.address = addr.trim();
+  }
+
+  // Extra Details
+  // Blood Group: Handle both labeled "Blood Group: O+" and standalone "O+"
+  const bloodTypeMatch = rawText.match(/\b(A|B|AB|O)[\s]*([\+\-])\b/i);
+  if (bloodTypeMatch) {
+    data.blood_group = (bloodTypeMatch[1] + bloodTypeMatch[2]).toUpperCase();
   } else {
-    const valid = banglaLines.filter(l => !/সরকার|জাতীয়|বাংলাদেশ/.test(l));
-    if (valid.length > 0) data.name_bn = valid[0];
+    const bloodLine = lines.find(l => /রক্তের\s+গ্রুপ|Blood\s+Group/i.test(l));
+    if (bloodLine) {
+      let val = bloodLine.split(/[:ঃ]/).slice(1).join(':').trim();
+      // Surgically remove anything after the blood type or before other labels
+      val = val.split(/জন্মস্থান|Place\s+of\s+Birth/i)[0].trim();
+      // Further filter to just the blood type if possible
+      const m = val.match(/([ABO]{1,2}[\+\-])/i);
+      data.blood_group = m ? m[1].toUpperCase() : val;
+    }
+  }
+
+  // Place of Birth: Handle "জন্মস্থান: ঢাকা মুদ্রণ: ০১"
+  const pobLine = lines.find(l => /জন্মস্থান|Place\s+of\s+Birth/i.test(l));
+  if (pobLine) {
+    let val = pobLine.split(/[:ঃ]/).slice(1).join(':').trim();
+    // Remove trailing 'Print' (মুদ্রণ) info if present
+    val = val.split(/মুদ্রণ|Print/i)[0].trim();
+    data.place_of_birth = val;
   }
 
   return data;
