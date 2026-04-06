@@ -13,36 +13,43 @@ The system uses a two-tier extraction strategy to handle both native (text-based
 Most Bangla PDFs store text in "Visual Order" (vowel signs before consonants). The ScanForge Normalizer performs a multi-pass transformation to restore Unicode Logical Order:
 
 A. Vowel Shifting:
-   - Reverts false 'ো' (O-kar) to 'ে' (E-kar) when extracted in visual order.
    - Moves pre-base markers (ি, ে, ৈ) after their base consonants (e.g., েক -> কে).
    - Recomposes split vowels (ে + কা -> কো).
 
 B. Conjunct Restoration (Jugmo Borno):
    - Restores missing hasantas (connecting marks) in common clusters.
    - Ganj (গঞ্জ): Maps extracted 'গঞ' -> 'গঞ্জ'.
-   - Panchayet (পঞ্চায়েত): Maps extracted 'পঞ' -> 'পঞ্চ'.
    - Master (মাস্টার): Maps common misreadings like 'মাষার' and 'মাষাব' -> 'মাস্টার'.
-   - Akhtar (আক্তার): Maps 'আকার' -> 'আক্তার' for common name variants.
-   - Restores common double consonants: 'নন' -> 'ন্ন', 'লল' -> 'ল্ল', 'ম্ম' -> 'ম্ম'.
+   - Reph Restoration: Specifically maps 'ণর' -> 'র্ণ' for name and address accuracy.
 
-C. Visual Clusters:
-   - Ya-phala (য-ফলা): Automatically restores 'ব্য', 'ল্য' and other post-consonant clusters.
-   - Ba-phala (ব-ফলা): Restores 'স্ব', 'দ্ব' in names and addresses.
-   - Reph Restoration: Specifically maps 'ণর' -> 'র্ণ' to fix common address errors like 'সর্ণকার'.
+3. NID DUAL-SIDE EXTRACTION
+---------------------------
+The system now supports multi-file uploads (Front + Back) for NID cards:
+- Logic: Backend merges OCR text from both images into a single processing block.
+- Field Separation: Surgically separates 'Blood Group' (O+/A-/etc.) from 'Place of Birth' (জন্মস্থান) even if they appear on the same line.
+- Manual Refinement: Every field in the resulting form is editable for 100% data accuracy.
 
-3. OCR PIPELINE (SCANNED PDFS)
-------------------------------
-- Detection: System flags any PDF with <100 characters of text for OCR.
-- Conversion: Pages are converted to 1200px wide PNG buffers using pdf-img-convert.
-- Tesseract.js: Processes images using the 'ben' (Bengali) language pack.
-- Reusable Worker: Optimized to process multi-page documents without constant engine restarts.
+4. INSTANT CAMERA MODULE
+-------------------------
+- Implementation: Uses `navigator.mediaDevices.getUserMedia` for real-time video preview.
+- Frame Capture: Uses a hidden <canvas> to grab high-resolution JPEG snapshots (0.95 quality) from the video stream.
+- Scanning UI: Professional overlay with CSS-animated 'laser' scanning line and alignment frame.
 
-4. DATA EXPORT & COMPATIBILITY
+5. MOBILE-FIRST ARCHITECTURE
 -----------------------------
-- Excel Formula Trick: Long numeric Voter IDs are exported as `="<ID>"` to prevent Excel from converting them to Scientific Notation (e.g., 1.23E+12).
-- UTF-8 BOM: Injects `\uFEFF` into the CSV file to ensure Excel renders Bangla characters correctly upon opening.
+- UI Framework: Responsive Vanilla CSS with dynamic grid-based layouts.
+- Breakpoints: Optimized for Desktop, Tablet (768px), and mobile (640px).
+- Navigation: Dashboard-first 'Portal' layout (সেবাসমূহ) with persistent headers and welcome bars.
 
-5. REGEX FIELD MAPPING
----------------------
-- Robust patterns for Serial Numbers, Names, Voter IDs, and Addresses.
-- Handles "hidden" Date of Birth fields embedded in occupation lines (e.g., 'জন তারিখ' vs 'জন্ম তারিখ').
+6. DATA EXPORT & COMPATIBILITY
+-----------------------------
+- Excel Formula Trick: Long numeric Voter IDs are exported as `="<ID>"` to prevent Excel's scientific notation conversion.
+- UTF-8 BOM: Injects `\uFEFF` into the CSV file to ensure Excel renders Bangla characters correctly.
+
+7. REGEX FIELD MAPPING (REFINED)
+---------------------------------
+- Patterns for Serial Numbers, Names, Voter IDs, and Addresses.
+- Optimized NID patterns: 
+  - ID Number: Support for 10, 13, and 17 digit variants.
+  - Blood Group: Isolated regex `\b(A|B|AB|O)[\s]*([\+\-])\b` to avoid keyword pollution.
+  - Jonmosthan: Specifically strips trailing 'Print/মুদ্রণ' artifacts from place of birth.

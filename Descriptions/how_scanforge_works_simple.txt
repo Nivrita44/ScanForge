@@ -8,43 +8,39 @@ Imagine trying to read a book where all the letters are in the wrong order, and 
 ------------------------------------------------------------------
 Bangla is a beautiful but complex language. In many old PDF files, the computer saves the letters in the order they APPEAR to your eyes, rather than the order they are typed. 
 
-For example, when you see "বেগম" (Begum), the small mark on the left (ে) is saved AFTER "ব". But when the computer extracts the text, it gets confused and gives us "ব" + "ে", which looks wrong or scrambled.
+For example, when you see "বেগম" (Begum), the mark on the left (ে) is saved AFTER "ব". We built an "Automatic Logic Engine" that acts like a smart librarian. It looks at every word and says: "Wait, this mark belongs on the other side!" and shifts every vowel to its correct position.
 
-What we did:
-- We built an "Automatic Logic Engine" that acts like a smart librarian. It looks at every word and says: "Wait, this mark belongs on the other side!"
-- It carefully shifts every vowel (like 'ি', 'ে', 'ৈ') to its correct logical position so the words are spelled perfectly for your CSV file.
+2. THE "MISSING LINKS" (Fixing Complex Characters / Joint Letters)
+-----------------------------------------------------------------
+Some words use "Joint Letters." When converted to text, the links are lost. We taught the system to recognize these broken patterns and repair them automatically (e.g., repairing "Mastari" or "Mannan").
 
-2. THE "MISSING LINKS" (Fixing Complex Characters / Jugmo Borno)
----------------------------------------------------------------
-Some words, like "বেগমগঞ্জ" (Begumganj) or "মাস্টার" (Master), use "Joint Letters." When the PDF is converted to text, the invisible "links" that join these letters are often lost. "Master" might end up looking like a completely different, garbled word.
+3. THE MODERN "PORTAL" DASHBOARD
+--------------------------------
+We transformed the interface into a professional "Bangla Digital Portal." 
+- It now starts with a "Services Grid" (সেবাসমূহ), making it feel like an official government portal.
+- You can jump between different tools (Voter PDF or NID Scanner) seamlessly.
 
-What we did:
-- We taught the system to recognize these broken patterns. 
-- If it sees "Begumgan" without the proper "nj" link, it automatically repairs it. 
-- We specifically trained it to recognize common local names and areas (like "Master Bari", "Mannan", "Akhtar") and fix their spelling automatically if the PDF spits out nonsense.
+4. INSTANT CAMERA SCANNING
+--------------------------
+No need to take a photo on your phone and then upload it. 
+- Click the "ক্যামেরা" (Camera) button to open your device's camera inside the app.
+- A scanning frame and laser line help you align your card, then you snap a photo for immediate processing.
 
-3. TELLING A PHOTO FROM A DOCUMENT (The Scanned PDF Fallback)
--------------------------------------------------------------
-Some PDFs are "Live Text" (you can highlight the words), but others are just "Photos" of a page (Scanned PDFs). Traditional tools see a scanned PDF as an empty page.
+5. DUAL-SIDE NID SCANNING
+-------------------------
+NID cards have info on both sides. 
+- ScanForge now lets you scan BOTH the front and back.
+- It automatically combines the text from both sides to give you a complete profile (Name, Address, Blood Group, etc.) in one go.
 
-What we did:
-- We built a "Smart Detection" system. If the tool realizes it can't find any text on the page, it doesn't give up.
-- It "takes a high-resolution photo" of the PDF page and sends it to a specialized OCR Engine (Tesseract).
-- The engine "reads" the photo letter by letter, just like a human would, and converts the picture back into editable Bangla text.
+6. MOBILE FRIENDLY (Anytime, Anywhere)
+--------------------------------------
+The system is fully optimized for mobile phones. Whether using a laptop or a small smartphone in the field, the buttons, forms, and camera view stay perfectly aligned.
 
-4. THE EXCEL "LONG NUMBER" FIX
-------------------------------
-Voter IDs are very long (sometimes 17 digits). Excel usually sees a long number and turns it into weird shorthand (like 1.23E+12). 
-
-What we did:
-- We added a "Shield" around the Voter IDs during export. 
-- By formatting them in a very specific way (`="123456..."`), we tell Excel: "This is a Name/ID, do not touch it!" This keeps your IDs perfectly visible.
-
-5. READY FOR EXCEL
+7. READY FOR EXCEL
 ------------------
-Finally, we added a "Secret Code" (UTF-8 BOM) to the top of every file. Without this, when you open the file in Excel, the Bangla text might look like strange symbols. With this code, Excel immediately knows: "This is Bangla text—show it clearly!"
-
+- We added a "Shield" around Voter IDs to stop Excel from turning them into shorthand numbers.
+- We added a "Secret Code" (UTF-8 BOM) so Bangla text appears clearly in Excel without strange symbols.
 
 SUMMARY
 -------
-ScanForge is now a "Smart Assistant" that doesn't just copy-paste text—it understands how Bangla is put together, fixes common spelling mistakes caused by the computer, and even uses a "digital eye" to read scanned photos when the text is missing.
+ScanForge is now a comprehensive "Smart Portal." It combines intelligent Bangla parsing, real-time camera scanning, and a professional, mobile-friendly interface to handle all your document extraction needs—from thick voter list PDFs to individual NID cards.
