@@ -29,7 +29,7 @@ export default function PdfUploader() {
     const formData = new FormData();
     formData.append('pdf', file);
 
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
     try {
       const response = await axios.post(`${API_URL}/api/upload-pdf`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' }
