@@ -10,7 +10,7 @@ ScanForge is a professional document intelligence system designed for Bangladesh
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) (v16 or higher)
+- [Node.js](https://nodejs.org/) (v22.12.0 or higher)
 - [npm](https://www.npmjs.com/)
 
 ## Local Setup
